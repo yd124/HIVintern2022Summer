@@ -1,0 +1,24 @@
+METHOD RK4
+STARTTIME =0
+STOPTIME = 45
+DT = 0.01
+
+d/dt(T) = d*10**-3 - d*T-b*T*V
+d/dt(I) = b*T*V - dlt*I
+d/dt(LV) = 1/(V*LOGN(10)) *(p*I -23*V)
+
+V = 10**(LV)
+
+b = if t > tau then beta_ifty + (beta_0-beta_ifty)*exp(-k*(t-tau)) else beta_0
+
+init T = 10**4
+init I = 0
+init LV = -3
+
+beta_0 = 4.09*(10**-7)
+beta_ifty = 0.233*(10**-6)
+k = 0.249
+dlt = 0.775
+p = 14.5*(10**3)
+d = 0.030
+tau = 7
