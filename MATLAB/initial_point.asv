@@ -1,0 +1,82 @@
+
+data = readtable('../data/data1/logvRNA.csv');
+
+patients = unique(data.patient,'stable');
+num_pat = size(patients,1);
+
+path = string(strcat('../data/data1/CHID46.csv'));
+data = table2array(readtable(path));
+
+
+
+h = 0.01;
+time = 0:h:80; 
+init = [10^4 0 10^-3];
+c = 23;
+
+param = [1,1,1,1,1];
+
+ints = [10E-1, 10E-2,10E-3, 10E-4, 10E-5, 10E-6, 10E-7,10E-8,10E-9];
+N = size(ints,2);
+errors = zeros(1,N);
+epsilon = 10E-15;
+
+for j = 1:N
+
+    param(1) = ints(j)-epsilon;
+    er1 = J(param,data,h,time,init,6,c);
+    
+    param(1) = ints(j) + epsilon;
+    er2 = J(param,data,h,time,init,6,c);
+    
+    errors(j) = (er2 - er1)/(2*epsilon);
+
+end 
+
+
+
+
+
+
+function out=beta(t,tau,k,beta_0,beta_ifty)
+    if t <= tau
+        out = beta_0;
+    else
+        out = beta_ifty+(beta_0-beta_ifty)*exp(-k*(t-tau));
+    end
+end
+
+
+function out = pred_logV(param, time, init,tau,c)
+    beta_0=param(1);
+    beta_ifty=param(2);
+    k = param(3);
+    dlt = param(4);
+    p = param(5);
+    d = param(6);
+    
+    f = @(t,x) [d*(10^4-x(1))-beta(t,tau,k,beta_0,beta_ifty)*x(1)*x(3);...
+            beta(t,tau,k,beta_0,beta_ifty)*x(1)*x(3)-dlt*x(2);...
+            p*x(2)-c*x(3) ];
+  
+    [t,xa] = ode45(f,time,init);
+    out = log10(xa(:,3));
+    
+end
+
+
+function out=J(x, param,data,h,time,init,tau,c)
+    param = [x param];
+    pred = pred_logV(param, time, init,tau,c);
+
+    num = size(data,1);
+    sum = 0;
+    for i = 1:num
+        day = data(i,1);
+        pred_logv = pred(day/h+1);
+        
+        sum = sum + (pred_logv - data(i,2))^2;
+    end 
+    
+   out = sum/num;
+end 
