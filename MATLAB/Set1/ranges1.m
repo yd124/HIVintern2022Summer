@@ -4,96 +4,78 @@ y = data.log_vRNA;
 num = size(dpi,1);
 
 tic
-out = simulate(10,num,dpi,y,Inf);
-erbd = min(out(:,1));
+% out = simulate(10,num,dpi,y,Inf);
+% erbd = min(out(:,1));
 
 
-% out = simulate(100,num,dpi,y,erbd);
-% scatter(out(:,4),out(:,1));
+out = simulate(10,dpi,y,0.1); %0.5*num);
+
+tb = array2table(out,...
+            'VariableNames', ...
+            {'J','b0','bi','k','dlt','p','d','tau'});
+writetable(tb, 'sim100v6.csv');
+
 toc
 
 
 
+
 %% find the rough minimum error 
-function out = simulate(max_N,num,dpi,y,erbd)
+function out = simulate(max_N,dpi,y,erbd)
     
     h = 0.01;
+    ti = 0:h:dpi(end);
+
     out = zeros(max_N,8);
     N = 0;
 
     n = 0;
+
     while N < max_N
         n = n + 1;
-        fprintf('n %d\n',n);
+%         fprintf('n %d\n',n);
         
         
-        eps = 10^-12;
 
         %% Unif(a,b) -> a+(b-a)*rand
-        bi = eps + 10^-6*rand;
-
-        b0 = bi + 10^-6*rand;
+        bi = 2*10^-6*rand;
+        b0 = bi + 10^-5*rand;
 
         
-        p = 10^2 + (10^6-10^2)*rand; 
+        p = 1*10^4*rand;  %10^2 + (10^5-10^2)*rand; 
       
         init = [10^4 0 10^-3];
 
-        dlt = init(1)*pi*bi/23*rand;
+        dlt = min(1,init(1)*p*bi/23)*rand;
 
-        k = eps + 20*rand;   
-        d = eps + 2*rand; 
+        k = 20*rand;   
+        d = 2*rand; 
         
         if bi == 0 || k == 0 || dlt == 0 || p == 0 || d == 0
             continue
         end 
         
-
-        tau = unidrnd(30);
-%         params = [b0 bi k dlt p d tau];
+        tau = unidrnd(30);        
         
-    
-        start = 0;
-        V = zeros(dpi(end)/h+1,1);
-     
-        for i = 1:num
-    
-            sti = start:h:dpi(i);
-            xa = pred(sti,init,b0,bi,k,dlt,p,d,tau);
-    
-            Vi = xa(end,3);
-    
-    
-            if (Vi > 0) && (abs(log10(Vi)-y(i))< 1)
-    
-                try
-                    idx = round(sti/h+1);
-                    V(idx) = xa(:,3);
-                catch
-                    fprintf('signluar points');
-                    break;
-                end 
-    
-                start = dpi(i);
-                init = xa(end,:);
-    
-            else 
-                break
-            end
-    
+        xa = pred(ti,init,b0,bi,k,dlt,p,d,tau);
+        V = xa(:,3);
+        if min(V) <= 0
+            continue
         end 
         
-        if i == num 
-            y_hat = log10(V(dpi/h+1));
-            error = MSE(y,y_hat);
-            if error < erbd
-                N = N + 1;
-%                 fprintf('N %d\n',N);
-                out(N,1) = error;
-                out(N,2:end) = [b0 bi k dlt p d tau];
-            end 
+  
+        
+        
+        y_hat = log10(V(dpi/h+1));
+        error = MSE(y,y_hat);
+        if error < erbd
+            N = N + 1;
+            fprintf('N %d\n',N);
 
+            out(N,1) = error;
+            out(N,2:end) = [b0 bi k dlt p d tau];
         end 
+
     
     end 
 

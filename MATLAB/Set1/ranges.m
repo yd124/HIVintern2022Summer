@@ -8,12 +8,12 @@ tic
 % erbd = min(out(:,1));
 
 
-out = simulate(100,num,dpi,y,0.1);
+out = simulate(300,num,dpi,y,0.5*num);
 
 tb = array2table(out,...
             'VariableNames', ...
             {'J','b0','bi','k','dlt','p','d','tau'});
-writetable(tb, 'sim100v2.csv');
+writetable(tb, 'sim100v5.csv');
 
 toc
 
@@ -35,15 +35,15 @@ function out = simulate(max_N,num,dpi,y,erbd)
         
 
         %% Unif(a,b) -> a+(b-a)*rand
-        bi = 10^-6*rand;
-        b0 = bi + 10^-6*rand;
+        bi = 0.2*10^-6 + (2*10^-6 - 0.2*10^-6)*rand;
+        b0 = bi + 10^-5*rand;
 
         
-        p = 10^2 + (10^5-10^2)*rand; 
+        p = 1*10^4*rand;  %10^2 + (10^5-10^2)*rand; 
       
         init = [10^4 0 10^-3];
 
-        dlt = init(1)*p*bi/23*rand;
+        dlt = min(1,init(1)*p*bi/23)*rand;
 
         k = 20*rand;   
         d = 2*rand; 

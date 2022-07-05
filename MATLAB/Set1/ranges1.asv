@@ -10,9 +10,13 @@ tic
 
 out = simulate(1,num,dpi,y,0.5*num);
 
-params = table2array(readtable('first10.csv'));
+% tb = array2table(out,...
+%             'VariableNames', ...
+%             {'J','b0','bi','k','dlt','p','d','tau'});
+% writetable(tb, 'sim100v5.csv');
 
-x0 = params(1,2:end);
+toc
+
 
 
 
@@ -20,6 +24,8 @@ x0 = params(1,2:end);
 function out = simulate(max_N,num,dpi,y,erbd)
     
     h = 0.01;
+    ti = 0:h:dpi(end);
+
     out = zeros(max_N,8);
     N = 0;
 
@@ -28,66 +34,49 @@ function out = simulate(max_N,num,dpi,y,erbd)
         n = n + 1;
         fprintf('n %d\n',n);
         
-        params = table2array(readtable('first10.csv'));
-
-        x0 = params(1,2:end);
-
-        b0 = x0(1);
-        bi = x0(2);
-        k = x0(3);
-        dlt = x0(4);
-        p = x0(5);
-        d = x0(6);
-        tau = x0(7);
         
+
+        %% Unif(a,b) -> a+(b-a)*rand
+        bi = 0.2*10^-6 + (2*10^-6 - 0.2*10^-6)*rand;
+        b0 = bi + 10^-5*rand;
+
+        
+        p = 1*10^4*rand;  %10^2 + (10^5-10^2)*rand; 
+      
         init = [10^4 0 10^-3];
-        start = 0;
 
-        ti = 0:0.01:dpi(end);
-        xa2 = pred(ti,[10^4 0 10^-3],b0,bi,k,dlt,p,d,tau);
-        V2 = xa2(:,3);
-        xa3 = pred(0:h:dpi(1),init,b0,bi,k,dlt,p,d,tau); 
-        V3 = xa3(:,3);
+        dlt = min(1,init(1)*p*bi/23)*rand;
+
+        k = 20*rand;   
+        d = 2*rand; 
         
-        V = zeros(dpi(end)/h+1,1);
-     
-        for i = 1:num
-    
-            sti = start:h:dpi(i);
-            xa = pred(sti,init,b0,bi,k,dlt,p,d,tau);
-    
-            idx = round(sti/h+1);
-            V(idx) = xa(:,3);
-            start = dpi(i);
-            init = xa(end,:);
+        if bi == 0 || k == 0 || dlt == 0 || p == 0 || d == 0
+            continue
+        end 
+        
 
-            disp(init(3)-V2(dpi(i)/h+1));
-            disp(init(3)-V3(dpi(1)/h+1));
+        tau = unidrnd(30);
+%         params = [b0 bi k dlt p d tau];
+        
+        xa = pred(ti,init,b0,bi,k,dlt,p,d,tau);
+        V = xa(:,3);
+        if min(V) <= 0
+            break
+        end 
+        
+  
+        
+        
+        y_hat = log10(V(dpi/h+1));
+        error = MSE(y,y_hat);
+        if error < erbd
+            N = N + 1;
 
+            out(N,1) = error;
+            out(N,2:end) = [b0 bi k dlt p d tau];
+%             plot(ti,log10(V))
         end 
 
-
-
-
-   
-        plot(ti,log10(V));
-        hold on
-
-
-        scatter(ti,log10(V2));
-        scatter(dpi,y);
-        hold off 
-        if i == num 
-            y_hat = log10(V(dpi/h+1));
-            error = MSE(y,y_hat);
-            if error < erbd
-                N = N + 1;
-%                 fprintf('N %d\n',N);
-                out(N,1) = error;
-                out(N,2:end) = [b0 bi k dlt p d tau];
-            end 
-
-        end 
     
     end 
 

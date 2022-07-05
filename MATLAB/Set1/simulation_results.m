@@ -1,8 +1,14 @@
-data = readtable('sim100v2.csv');
+data = readtable('sim100v6.csv');
 y = data.J;
+
 
 idx = find(y==min(y));
 disp(data(idx,:))
+
+% tb = array2table(data(idx,:),...
+%             'VariableNames', ...
+% %             {'J','b0','bi','k','dlt','p','d','tau'});
+% writetable(tb, 'params_sim100v3.csv');
 
 tiledlayout(3,3);
 
