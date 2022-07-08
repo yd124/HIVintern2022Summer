@@ -8,12 +8,12 @@ tic
 % erbd = min(out(:,1));
 
 
-out = simulate(1,num,dpi,y,0.5*num);
+out = simulate(1000,dpi,y,0.5*num);
 
-% tb = array2table(out,...
-%             'VariableNames', ...
-%             {'J','b0','bi','k','dlt','p','d','tau'});
-% writetable(tb, 'sim100v5.csv');
+tb = array2table(out,...
+            'VariableNames', ...
+            {'J','b0','bi','k','dlt','p','d','tau'});
+writetable(tb, 'sim100v6.csv');
 
 toc
 
@@ -21,67 +21,61 @@ toc
 
 
 %% find the rough minimum error 
-function out = simulate(max_N,num,dpi,y,erbd)
+function out = simulate(max_N,dpi,y,erbd)
     
     h = 0.01;
     ti = 0:h:dpi(end);
 
     out = zeros(max_N,8);
     N = 0;
-
     n = 0;
+
     while N < max_N
         n = n + 1;
         fprintf('n %d\n',n);
-        
-        
 
         %% Unif(a,b) -> a+(b-a)*rand
-        bi = 0.2*10^-6 + (2*10^-6 - 0.2*10^-6)*rand;
+        %% N(mu,sigma) -> mu+sigma*randn
+        bi = 2*10^-6*rand;
+     
+%         bi =  10^-6*randn; %2*10^-6*rand;
         b0 = bi + 10^-5*rand;
-
         
-        p = 1*10^4*rand;  %10^2 + (10^5-10^2)*rand; 
-      
+        p = 10^5
+        p = 10^4*randn;       %10^4*rand;  %10^2 + (10^5-10^2)*rand; 
+        
         init = [10^4 0 10^-3];
-
+        
         dlt = min(1,init(1)*p*bi/23)*rand;
-
         k = 20*rand;   
         d = 2*rand; 
-        
-        if bi == 0 || k == 0 || dlt == 0 || p == 0 || d == 0
+   
+        if bi <= 0 || k <= 0 || dlt <= 0 || p <= 0 || d <= 0
             continue
         end 
         
-
-        tau = unidrnd(30);
-%         params = [b0 bi k dlt p d tau];
-        
-        xa = pred(ti,init,b0,bi,k,dlt,p,d,tau);
+        tau = unidrnd(30);        
+        try
+            xa = pred(ti,init,b0,bi,k,dlt,p,d,tau);
+        catch
+            fprintf('signluar points');
+            continue
+        end
+         
         V = xa(:,3);
         if min(V) <= 0
-            break
+            continue
         end 
-        
-  
-        
-        
+      
         y_hat = log10(V(dpi/h+1));
         error = MSE(y,y_hat);
         if error < erbd
             N = N + 1;
-
+            fprintf('N %d\n',N);
             out(N,1) = error;
             out(N,2:end) = [b0 bi k dlt p d tau];
-%             plot(ti,log10(V))
         end 
-
-    
     end 
-
-    
-
 end 
 
 
@@ -123,10 +117,9 @@ function out = pred(ti,init,b0,bi,k,dlt,p,d,tau)
             b(t,b0,bi,k,tau)*x(1)*x(3)-dlt*x(2);...
             p*x(2)-23*x(3) ];    
 %     options = odeset('RelTol',1e-4,'AbsTol',1e-6);
-
     [t,xa] = ode45(f,ti,init);
     out = xa;
- 
+
 end
 
 

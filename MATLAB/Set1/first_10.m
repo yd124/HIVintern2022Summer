@@ -1,4 +1,4 @@
-data = readtable('sim100v5.csv');
+data = readtable('sim100v7.csv');
 y = data.J;
 
 c = ismember(y,mink(y,10));
@@ -6,4 +6,4 @@ idx = find(c);
 disp(data(idx,:))
 
 
-writetable(data(idx,:), 'first10.csv');
+writetable(data(idx,:), 'first10v7.csv');

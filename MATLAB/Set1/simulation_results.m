@@ -1,4 +1,4 @@
-data = readtable('sim100v6.csv');
+data = readtable('sim100v7.csv');
 y = data.J;
 
 
