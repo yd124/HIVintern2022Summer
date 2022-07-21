@@ -3,17 +3,20 @@ dpi = data.dpi;
 y = data.log_vRNA;
 num = size(dpi,1);
 
+s1 = readtable('first1v1.csv');
+s1 = table2array(s1);
+
 tic
-% out = simulate(10,num,dpi,y,Inf);
-% erbd = min(out(:,1));
 
 
-out = simulate(1000,dpi,y,0.5*num);
+A = 0.1;
+out = simulate(1,dpi,y,A*num, s1(1,2:end));
 
-tb = array2table(out,...
+
+tb1 = array2table(out,...
             'VariableNames', ...
-            {'J','b0','bi','k','dlt','p','d','tau'});
-writetable(tb, 'sim100v6.csv');
+            {'J','k'});
+writetable(tb1, 'k1.csv');
 
 toc
 
@@ -21,12 +24,21 @@ toc
 
 
 %% find the rough minimum error 
-function out = simulate(max_N,dpi,y,erbd)
+function out = simulate(max_N,dpi,y,erbd, params)
     
+    
+    b0 = params(1);
+    bi = params(2);
+%     k = params(3);
+    dlt = params(4);
+    p = params(5);
+    d = params(6);
+    tau = params(7);
+
     h = 0.01;
     ti = 0:h:dpi(end);
 
-    out = zeros(max_N,8);
+    out = zeros(max_N,2);
     N = 0;
     n = 0;
 
@@ -36,29 +48,21 @@ function out = simulate(max_N,dpi,y,erbd)
 
         %% Unif(a,b) -> a+(b-a)*rand
         %% N(mu,sigma) -> mu+sigma*randn
-        bi = 2*10^-6*rand;
-     
-%         bi =  10^-6*randn; %2*10^-6*rand;
-        b0 = bi + 10^-5*rand;
-        
-        p = 10^5
-        p = 10^4*randn;       %10^4*rand;  %10^2 + (10^5-10^2)*rand; 
-        
-        init = [10^4 0 10^-3];
-        
-        dlt = min(1,init(1)*p*bi/23)*rand;
-        k = 20*rand;   
-        d = 2*rand; 
-   
-        if bi <= 0 || k <= 0 || dlt <= 0 || p <= 0 || d <= 0
+
+        k = 30*rand;   
+    
+
+        if  k <= 0
             continue
         end 
         
-        tau = unidrnd(30);        
+              
         try
             xa = pred(ti,init,b0,bi,k,dlt,p,d,tau);
         catch
-            fprintf('signluar points');
+%             fprintf('signluar points');
+%             fprintf('k');
+            disp(k);
             continue
         end
          
@@ -73,7 +77,7 @@ function out = simulate(max_N,dpi,y,erbd)
             N = N + 1;
             fprintf('N %d\n',N);
             out(N,1) = error;
-            out(N,2:end) = [b0 bi k dlt p d tau];
+            out(N,2) = k;
         end 
     end 
 end 
