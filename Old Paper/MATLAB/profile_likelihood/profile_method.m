@@ -3,7 +3,8 @@
 
 %% Profile Methods
 function out = profile_method(xx,sampled_params,num_params, num_samples,dpi,y)
-    cd("~/Documents/MATLAB")
+    % cd('/Documents/MATLAB')
+    cd('/opt/apps/modulefiles/Matlab')
     options = optimoptions(@lsqnonlin,'MaxIterations', 500);
     LSE = zeros(num_params,num_samples);
     for ip = 1:num_params
