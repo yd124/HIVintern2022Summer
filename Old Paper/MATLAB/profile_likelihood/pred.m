@@ -2,7 +2,8 @@
 function out = pred(params,dpi)
     h = 0.01;
     ti = 0:h:dpi(end);
-    init = [10^4 0 10^-3];
+    init = [1E4 0 1E-3];
+
     b0 = params(1);
     bi = params(2);
     k = params(3);

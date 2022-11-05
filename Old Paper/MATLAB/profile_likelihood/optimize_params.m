@@ -1,6 +1,4 @@
 cd('~/Documents/GitHub/HIVintern2022Summer/Old Paper/MATLAB/profile_likelihood/')
-% @pred.m; 
-
 
 data = readtable('../../data/data1/logvRNA.csv');
 patients = unique(data.patient,'stable');
@@ -15,16 +13,30 @@ x6 = [0.057E-6, 0.004E-6, 0.021, 0.821, 89.892E3, 0.003, 22];
 x = [x1;x2;x3;x4;x5;x6];
 
 % parfor loop can use cpu and speed it up
-for i = 1:1 % length(patients)
 % parfor i = 1:length(patients)
+for i = 1:1 % length(patients)
     xx = x(i,:);
-    sub_data = data(data.patient == string(patients(i)),:);
-    dpi = sub_data.dpi;
-    
-    y = sub_data.log_vRNA;
-    y_hat = pred(xx,dpi);
-    disp(y_hat)
-    [opt_params,fval] = best_param(xx,dpi,y);
-    disp(fval);
 
+    patient = string(patients(i));
+    sub_data = data(data.patient == patient,:);
+    dpi = sub_data.dpi;
+    y = sub_data.log_vRNA;
+
+    out = zeros(2,8);
+    out(1,1) = J(xx,dpi,y);
+    out(1,2:end) = xx;
+
+    [bp,fval] = best_param(xx,dpi,y);
+    out(2,1) = fval;
+    out(2,2:end) = bp;
+ 
+
+    tb = array2table(out,...
+                'VariableNames', ...
+                {'J','b0','bi','k','dlt','p','d','tau'});
+    if ~exist(patient, 'dir')
+       mkdir(patient);
+    end
+
+    writetable(tb, './'+patient+'/' +patient+'.csv');
 end
