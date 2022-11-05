@@ -79,7 +79,6 @@ function out=J(params, ti,init,h, dpi,y)
 end 
 
 function [x,fval]=best_param(x0,dpi,y,ti,init,h) 
-  
     options = optimset('TolFun',1e-4,'TolX',1e-4,'MaxFunEvals', 4000,'MaxIter',4000);
     JJ = @(params) J(params, ti,init,h, dpi,y); 
     [x,fval] = fminsearch(JJ,x0,options);

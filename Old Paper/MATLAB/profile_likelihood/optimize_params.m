@@ -15,7 +15,7 @@ x6 = [0.057E-6, 0.004E-6, 0.021, 0.821, 89.892E3, 0.003, 22];
 x = [x1;x2;x3;x4;x5;x6];
 
 % parfor loop can use cpu and speed it up
-for i = 1:length(patients)
+for i = 1:1 % length(patients)
 % parfor i = 1:length(patients)
     xx = x(i,:);
     sub_data = data(data.patient == string(patients(i)),:);
@@ -24,7 +24,7 @@ for i = 1:length(patients)
     y = sub_data.log_vRNA;
     y_hat = pred(xx,dpi);
     disp(y_hat)
-%     [opt_params,fval] = best_param(xx,dpi,y);
-%     disp(fval);
+    [opt_params,fval] = best_param(xx,dpi,y);
+    disp(fval);
 
 end
