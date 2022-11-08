@@ -14,7 +14,8 @@ x = [x1;x2;x3;x4;x5;x6];
 
 % parfor loop can use cpu and speed it up
 % parfor i = 1:length(patients)
-for i = 1:1 % length(patients)
+for i = 1:length(patients)
+    tic
     xx = x(i,:);
 
     patient = string(patients(i));
@@ -39,4 +40,5 @@ for i = 1:1 % length(patients)
     end
 
     writetable(tb, './'+patient+'/' +patient+'.csv');
+    toc
 end

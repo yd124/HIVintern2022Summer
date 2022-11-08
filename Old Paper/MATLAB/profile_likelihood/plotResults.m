@@ -5,13 +5,13 @@ patients = unique(data.patient,'stable');
 
 names = ["b0" "bi" "k" "dlt" "p" "d" "tau"];
 
-
-for i=1:length(patients)
+for i=1:1
+% for i=1:length(patients)
     patient = string(patients(i));
 
     cd("~/Documents/GitHub/HIVintern2022Summer/Old Paper/MATLAB/profile_likelihood/"+patient);
-    LSEs = table2array(readtable('LSE.csv'));
-    sampled_params = table2array(readtable('sampled_params.csv'));
+    LSEs = table2array(readtable('LSE22.csv'));
+    sampled_params = table2array(readtable('sampled_params2.csv'));
     M = table2array(readtable(patient+'.csv'));
     
     num_params = size(LSEs,1);
@@ -21,20 +21,23 @@ for i=1:length(patients)
         nexttile
         P = sampled_params(ip,:);
         L = LSEs(ip,:);
-        plot(P(L>0),L(L>0));
+        fig = scatter(P(L>0),L(L>0),'filled');
+%         fig = plot(P(L>0),L(L>0));
         
         xlabel(names(ip));
         ylabel("LSE");
         hold on
 
-        for j = 1:size(M,1)
-            scatter(M(j,1+ip),M(j,1),'filled');
+        for j = 2:2 %size(M,1)
+            fig = scatter(M(j,1+ip),M(j,1),'filled');
             hold on
         end
-        legend('','x1','x2','Location','northwest')
+        legend('','x2','Location','northeast')
+
+%         legend('','x1','x2','Location','northeast')
 
 %         legend('','x1','x2','x3', 'x4','x5','x6','Location','northwest')
-   
+        saveas(fig,patient+'31.jpeg')
         hold off
     end 
 end 
