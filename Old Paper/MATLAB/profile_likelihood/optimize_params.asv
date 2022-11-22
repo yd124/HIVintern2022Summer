@@ -17,7 +17,7 @@ x = [x1;x2;x3;x4;x5;x6];
 % parfor i = 1:length(patients)
 parfor i = 1:length(patients)
     tic
-    xx = log10(x(i,:));
+    xx = x(i,:);
 
     patient = string(patients(i));
     sub_data = data(data.patient == patient,:);
@@ -43,4 +43,3 @@ parfor i = 1:length(patients)
     writetable(tb, './'+patient+'/' +patient+'.csv');
     toc
 end
-
